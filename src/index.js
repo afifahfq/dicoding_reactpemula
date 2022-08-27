@@ -5,7 +5,7 @@ import { createRoot } from 'react-dom/client';
 import './styles/style.css';
 
 // import data
-import { getInitialData } from './utils';
+import { getInitialData, showFormattedDate } from './utils';
 
 // function Header({ title }) {
 //     return (
@@ -61,7 +61,8 @@ class NoteInput extends React.Component {
     onSubmitEventHandler(event) {
         alert('A title was submitted: ' + this.state.title);
         alert('A body was submitted: ' + this.state.body);
-        this.props.addNote(this.state);
+        event.preventDefault();
+        this.props.onAdd(this.state);
     }
 
     onTitleChangeHandler(event) {
@@ -95,7 +96,7 @@ function NoteContent({ title, createdAt, body}) {
     return(
         <div className="note-item__content">
             <h3 className="note-item__title">{title}</h3>
-            <p className="note-item__date">{createdAt}</p>
+            <p className="note-item__date">{showFormattedDate(createdAt)}</p>
             <p className="note-item__body">{body}</p>
         </div>
     )
@@ -122,9 +123,6 @@ function Note({ id, title, body, createdAt, onDelete}) {
 function NotesList({notes, onDelete}) {
     return(
         <div className="notes-list">
-            {/* {notes.map((note) => (
-                <Note {...note} key={note.id} onDelete={onDelete}/>
-            ))} */}
             {notes.map((note) => (
                 <Note key={note.id} id={note.id} onDelete={onDelete} {...note} />
             ))}
@@ -133,10 +131,10 @@ function NotesList({notes, onDelete}) {
 }
 
 
-function Body({notes, onDelete}) {
+function Body({notes, onDelete, onAdd}) {
     return(
         <div className="note-app__body">
-            <NoteInput/>
+            <NoteInput onAdd={onAdd}/>
             <h2>Catatan Aktif</h2>
             <NotesList notes={notes} onDelete={onDelete}/>
             <h2>Arsip</h2>
@@ -164,6 +162,7 @@ class NotesApp extends React.Component {
     onAddNoteHandler({ title, body }) {
         this.setState((prevState) => {
             return {
+                ...prevState,
                 notes: [
                 ...prevState.notes,
                 {
@@ -181,7 +180,7 @@ class NotesApp extends React.Component {
         return(
             <div>
                 <Header/>
-                <Body notes={this.state.notes} onDelete={this.onDeleteHandler}/>
+                <Body notes={this.state.notes} onDelete={this.onDeleteHandler} onAdd={this.onAddNoteHandler}/>
             </div>
         );
     }
