@@ -22,7 +22,8 @@ class NoteInput extends React.Component {
     
         this.state = {
           title: '',
-          body: ''
+          body: '', 
+          remainder : '50'
         };
     
         this.onSubmitEventHandler = this.onSubmitEventHandler.bind(this);
@@ -32,13 +33,21 @@ class NoteInput extends React.Component {
 
     onSubmitEventHandler(event) {
         event.preventDefault();
+        // if(this.state.remainder)
         this.props.onAdd(this.state);
     }
 
     onTitleChangeHandler(event) {
-        this.setState({
-            title: event.target.value
-        });
+        if (50 - event.target.value.length > 0) {
+            this.setState({
+                remainder: 50 - event.target.value.length,
+                title: event.target.value
+            });
+        } else {
+            this.setState({
+                remainder: 0
+            });
+        }
     }
 
     onBodyChangeHandler(event) {
@@ -52,7 +61,7 @@ class NoteInput extends React.Component {
             <div className="note-input">
                 <h2>Buat catatan</h2>
                 <form onSubmit={this.onSubmitEventHandler}>
-                    <p className="note-input__title__char-limit">Sisa karakter: </p>
+                    <p className="note-input__title__char-limit">Sisa karakter: {this.state.remainder}</p>
                     <input className="note-input__title" type="text" placeholder="Ini adalah judul ..." value={this.state.title} onChange={this.onTitleChangeHandler} required/>
                     <textarea className="note-input__body" type="text" placeholder="Tuliskan catatanmu di sini ..." value={this.state.body} onChange={this.onBodyChangeHandler} required></textarea>
                     <button type="submit">Buat</button>
@@ -91,7 +100,7 @@ function Note({ id, title, body, createdAt, onDelete, onArchive }) {
 }
 
 function NotesList({notes, search, onDelete, onArchive }) {
-    if (notes.length == 0) {
+    if (notes.length === 0) {
         return(
             <p className="notes-list__empty-message">Tidak ada catatan</p>
         );
@@ -147,7 +156,7 @@ class NotesApp extends React.Component {
     onArchiveHandler(id) {
         const temp = this.state.notes;
         temp.forEach((note) => {
-            if (note.id == id) {
+            if (note.id === id) {
                 console.log(note.title);
                 note.archived = !note.archived;
             }
