@@ -1,47 +1,19 @@
+import { toHaveAccessibleDescription } from '@testing-library/jest-dom/dist/matchers';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-// import style
 import './styles/style.css';
-
-// import data
 import { getInitialData, showFormattedDate } from './utils';
 
-// function Header({ title }) {
-//     return (
-//         <div className="note-app__header">
-//             <h1>{title}</h1>
-//             <div className="note-search">
-//                 <input type="text" placeholder="Cari catatan ..."/>
-//             </div>
-//         </div>
-//     );
-// }
-
-class Header extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            value: ''
-        };
-        this.handleChange = this.handleChange.bind(this);
-    }
-
-    handleChange(event) {
-        this.setState({value: event.target.value});
-        alert('A name was submitted: ' + this.state.value);
-    }
-    
-    render() {
-        return(
-            <div className="note-app__header">
-                <h1>Notes</h1>
-                <div className="note-search">
-                    <input type="text" placeholder="Cari catatan ..." value={this.state.value} onChange={this.handleChange}/>
-                </div>
+function Header ({ onChange }){    
+    return(
+        <div className="note-app__header">
+            <h1>Notes</h1>
+            <div className="note-search">
+                <input type="text" placeholder="Cari catatan ..." onChange={onChange}/>
             </div>
-        );
-    }
+        </div>
+    );
 }
 
 class NoteInput extends React.Component {
@@ -120,7 +92,14 @@ function Note({ id, title, body, createdAt, onDelete}) {
     )
 }
 
-function NotesList({notes, onDelete}) {
+function NotesList({notes, search, onDelete}) {
+    if (search != null || search.length > 0) {
+        console.log(search);
+        notes = notes.filter((note) => (
+            note.title.toLowerCase().includes(search.toLowerCase())
+        ))
+    }
+
     return(
         <div className="notes-list">
             {notes.map((note) => (
@@ -131,12 +110,12 @@ function NotesList({notes, onDelete}) {
 }
 
 
-function Body({notes, onDelete, onAdd}) {
+function Body({notes, search, onDelete, onAdd}) {
     return(
         <div className="note-app__body">
             <NoteInput onAdd={onAdd}/>
             <h2>Catatan Aktif</h2>
-            <NotesList notes={notes} onDelete={onDelete}/>
+            <NotesList notes={notes} search={search} onDelete={onDelete}/>
             <h2>Arsip</h2>
             <p className="notes-list__empty-message">Tidak ada catatan</p>
         </div>
@@ -148,10 +127,12 @@ class NotesApp extends React.Component {
         super(props);
         this.state = {
           notes: getInitialData(),
+          search: ''
         }
       
         this.onDeleteHandler = this.onDeleteHandler.bind(this);
         this.onAddNoteHandler = this.onAddNoteHandler.bind(this);
+        this.onSearchHandler = this.onSearchHandler.bind(this);
     }
 
     onDeleteHandler(id) {
@@ -175,12 +156,16 @@ class NotesApp extends React.Component {
             ]}
         });
     }
+
+    onSearchHandler(event) {
+        this.setState({ search: event.target.value });
+    }
     
     render() {
         return(
             <div>
-                <Header/>
-                <Body notes={this.state.notes} onDelete={this.onDeleteHandler} onAdd={this.onAddNoteHandler}/>
+                <Header onChange={this.onSearchHandler}/>
+                <Body notes={this.state.notes} search={this.state.search} onDelete={this.onDeleteHandler} onAdd={this.onAddNoteHandler}/>
             </div>
         );
     }
