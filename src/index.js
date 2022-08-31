@@ -31,8 +31,6 @@ class NoteInput extends React.Component {
     }
 
     onSubmitEventHandler(event) {
-        alert('A title was submitted: ' + this.state.title);
-        alert('A body was submitted: ' + this.state.body);
         event.preventDefault();
         this.props.onAdd(this.state);
     }
@@ -74,27 +72,32 @@ function NoteContent({ title, createdAt, body}) {
     )
 }
 
-function NoteAction({ id, onDelete}) {
+function NoteAction({ id, onDelete, onArchive }) {
     return(
         <div className="note-item__action">
             <button className="note-item__delete-button" onClick={() => onDelete(id)}>Delete</button>
-            <button className="note-item__archive-button">Arsipkan</button>
+            <button className="note-item__archive-button" onClick={() => onArchive(id)}>Arsipkan</button>
         </div>
     )
 }
 
-function Note({ id, title, body, createdAt, onDelete}) {
+function Note({ id, title, body, createdAt, onDelete, onArchive }) {
     return(
         <div className="note-item">
             <NoteContent title={title} createdAt={createdAt} body={body}/>
-            <NoteAction id={id} onDelete={onDelete}/>
+            <NoteAction id={id} onDelete={onDelete} onArchive={onArchive}/>
         </div>
     )
 }
 
-function NotesList({notes, search, onDelete}) {
+function NotesList({notes, search, onDelete, onArchive }) {
+    if (notes.length == 0) {
+        return(
+            <p className="notes-list__empty-message">Tidak ada catatan</p>
+        );
+    }
+
     if (search != null || search.length > 0) {
-        console.log(search);
         notes = notes.filter((note) => (
             note.title.toLowerCase().includes(search.toLowerCase())
         ))
@@ -103,21 +106,21 @@ function NotesList({notes, search, onDelete}) {
     return(
         <div className="notes-list">
             {notes.map((note) => (
-                <Note key={note.id} id={note.id} onDelete={onDelete} {...note} />
+                <Note key={note.id} id={note.id} onDelete={onDelete} onArchive={onArchive} {...note} />
             ))}
         </div>
     )
 }
 
 
-function Body({notes, search, onDelete, onAdd}) {
+function Body({notes, search, onDelete, onAdd, onArchive}) {
     return(
         <div className="note-app__body">
             <NoteInput onAdd={onAdd}/>
             <h2>Catatan Aktif</h2>
-            <NotesList notes={notes} search={search} onDelete={onDelete}/>
+            <NotesList notes={notes.filter((note) => !note.archived)} search={search} onDelete={onDelete} onArchive={onArchive}/>
             <h2>Arsip</h2>
-            <p className="notes-list__empty-message">Tidak ada catatan</p>
+            <NotesList notes={notes.filter((note) => note.archived)} search={search} onDelete={onDelete} onArchive={onArchive}/>
         </div>
     );
 }
@@ -131,6 +134,7 @@ class NotesApp extends React.Component {
         }
       
         this.onDeleteHandler = this.onDeleteHandler.bind(this);
+        this.onArchiveHandler = this.onArchiveHandler.bind(this);
         this.onAddNoteHandler = this.onAddNoteHandler.bind(this);
         this.onSearchHandler = this.onSearchHandler.bind(this);
     }
@@ -138,6 +142,17 @@ class NotesApp extends React.Component {
     onDeleteHandler(id) {
         const notes = this.state.notes.filter(note => note.id !== id);
         this.setState({ notes });
+    }
+
+    onArchiveHandler(id) {
+        const temp = this.state.notes;
+        temp.forEach((note) => {
+            if (note.id == id) {
+                console.log(note.title);
+                note.archived = !note.archived;
+            }
+        });
+        this.setState({ temp });
     }
       
     onAddNoteHandler({ title, body }) {
@@ -165,7 +180,7 @@ class NotesApp extends React.Component {
         return(
             <div>
                 <Header onChange={this.onSearchHandler}/>
-                <Body notes={this.state.notes} search={this.state.search} onDelete={this.onDeleteHandler} onAdd={this.onAddNoteHandler}/>
+                <Body notes={this.state.notes} search={this.state.search} onDelete={this.onDeleteHandler} onAdd={this.onAddNoteHandler} onArchive={this.onArchiveHandler}/>
             </div>
         );
     }
