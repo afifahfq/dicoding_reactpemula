@@ -71,7 +71,7 @@ class NoteInput extends React.Component {
     }
 }
 
-function NoteContent({ title, createdAt, body}) {
+function NoteContent({ note, title, createdAt, body}) {
     return(
         <div className="note-item__content">
             <h3 className="note-item__title">{title}</h3>
@@ -81,20 +81,25 @@ function NoteContent({ title, createdAt, body}) {
     )
 }
 
-function NoteAction({ id, onDelete, onArchive }) {
+function NoteAction({ id, archived, onDelete, onArchive }) {
+    let text;
+    if (archived) {
+        text = 'Pindahkan';
+    } else text = 'Arsipkan';
+
     return(
         <div className="note-item__action">
             <button className="note-item__delete-button" onClick={() => onDelete(id)}>Delete</button>
-            <button className="note-item__archive-button" onClick={() => onArchive(id)}>Arsipkan</button>
+            <button className="note-item__archive-button" onClick={() => onArchive(id)}>{text}</button>
         </div>
     )
 }
 
-function Note({ id, title, body, createdAt, onDelete, onArchive }) {
+function Note({ id, title, body, createdAt, archived, onDelete, onArchive }) {
     return(
         <div className="note-item">
             <NoteContent title={title} createdAt={createdAt} body={body}/>
-            <NoteAction id={id} onDelete={onDelete} onArchive={onArchive}/>
+            <NoteAction id={id} onDelete={onDelete} archived={archived} onArchive={onArchive}/>
         </div>
     )
 }
@@ -115,7 +120,7 @@ function NotesList({notes, search, onDelete, onArchive }) {
     return(
         <div className="notes-list">
             {notes.map((note) => (
-                <Note key={note.id} id={note.id} onDelete={onDelete} onArchive={onArchive} {...note} />
+                <Note key={note.id} id={note.id} archived={note.archived} onDelete={onDelete} onArchive={onArchive} {...note} />
             ))}
         </div>
     )
